@@ -1,24 +1,64 @@
-﻿namespace MauiAndroidServer
+﻿using MauiAndroidServer.SncNS;
+
+namespace MauiAndroidServer
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
+
+        private MyWebserver myWebServer = new MyWebserver();
 
         public MainPage()
         {
             InitializeComponent();
+            myWebServer.PropertyChanged += MyWebServer_PropertyChanged;
         }
 
-        private void OnCounterClicked(object sender, EventArgs e)
+        private void MyWebServer_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            count++;
+            if (e.PropertyName == nameof(myWebServer.ServerRun))
+            {
+                if (myWebServer.ServerRun)
+                {
+                    CounterBtn.Dispatcher.Dispatch(() =>
+                    {
 
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
+                        CounterBtn.Background = Color.FromArgb("#FF55ff00");
+                        CounterBtn.Text = "Stop Server";
+                    });
+                }
+                else
+                {
+                    CounterBtn.Dispatcher.Dispatch(() =>
+                    {
+                        CounterBtn.Background = Color.FromArgb("#FFff0000");
+                        CounterBtn.Text = "Start Server";
+                    });
+                }
+
+                return;
+            }
+
+            if (e.PropertyName == nameof(myWebServer.ArgValue))
+            {
+                editor.Dispatcher.Dispatch(() =>
+                {
+                    editor.Text = myWebServer.ArgValue;
+                });
+            }
+
+        }
+
+        private void StartServer(object sender, EventArgs e)
+        {
+            if (CounterBtn.Text == "Start Server")
+            {
+                myWebServer.StartServer(entryIP.Text, entryPort.Text);
+            }
             else
-                CounterBtn.Text = $"Clicked {count} times";
+            {
+                myWebServer.StopServer();
+            }
 
-            SemanticScreenReader.Announce(CounterBtn.Text);
         }
     }
 
